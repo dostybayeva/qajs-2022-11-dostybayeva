@@ -1,7 +1,9 @@
 import {jest} from "@jest/globals"; jest;
 import {config} from "../framework/config.js";
 import {account} from "../framework/services/account.js";
+import {bookStore} from "../framework/services/bookStore.js";
 
+const isbn = '9781449331818';
 let userId;
 let token;
 
@@ -137,4 +139,51 @@ describe('Testing bookstore API', () => {
             }
         });
     });
+    describe('Testing endpoint /BookStore/v1/Books', () => {
+        test('successfully create book for user', async () => {
+            const response = await bookStore.createBook(userId, token, isbn);
+
+            expect(response.status).toEqual(201);
+        });
+        test('user not auth', async () => {
+            try {
+                const response = await bookStore.createBook(userId, isbn);
+            }
+            catch (e) {
+                expect(e.response.status).toEqual(401);
+                expect(e.response.data.code).toEqual('1200');
+                expect(e.response.data.message).toEqual('User not authorized!');
+            }
+        });
+        test('book already exists for user', async () => {
+            try {
+                const response = await bookStore.createBook(userId, token, isbn);
+            }
+            catch (e) {
+                expect(e.response.status).toEqual(400);
+                expect(e.response.data.code).toEqual('1210');
+                expect(e.response.data.message).toEqual("ISBN already present in the User's Collection!");
+            }
+        });
+    });
+    describe('Testing endpoint /BookStore/v1/Books', () => {
+        test('successfully update book', async () => {
+            const newIsbn = '9781449337711';
+            const response = await bookStore.updateBook(userId, isbn, newIsbn, token);
+            console.log(response.data);
+        })
+    });
+    describe('', () => {
+        test.only('', async () => {
+            const response = await bookStore.getBook(isbn);
+            console.log(response.data);
+        })
+    });
+    describe('', () => {
+        test('', async () => {
+            const response = await bookStore.deleteBook(userId, isbn, token);
+
+            expect(response.status).toEqual(204);
+        })
+    })
 })
