@@ -30,7 +30,7 @@ describe('Testing bookstore API', () => {
                 expect(e.response.data.message).toEqual("Passwords must have at least one non alphanumeric character, one digit ('0'-'9'), one uppercase ('A'-'Z'), one lowercase ('a'-'z'), one special character and Password must be eight characters or longer.");
             }
         });
-        test.only('create user successfully', async () => {
+        test('create user successfully', async () => {
             const response = await account.createUser(config.newUser)
             userId = response.data.userID;
 
@@ -49,7 +49,7 @@ describe('Testing bookstore API', () => {
                 expect(e.response.data.message).toEqual('UserName and Password required.');
             }
         });
-        test.only('generate token successfully', async () => {
+        test('generate token successfully', async () => {
             const response = await account.generateToken(config.newUser);
             token = response.data.token;
 
@@ -140,7 +140,7 @@ describe('Testing bookstore API', () => {
             }
         });
     });
-    describe.only('Testing endpoint POST /BookStore/v1/Books', () => {
+    describe('Testing endpoint POST /BookStore/v1/Books', () => {
         test('successfully create book for user', async () => {
             const response = await bookStore.createBook(userId, token, isbn);
 
@@ -167,7 +167,7 @@ describe('Testing bookstore API', () => {
             }
         });
     });
-    describe.only('Testing endpoint PUT /BookStore/v1/Books', () => {
+    describe('Testing endpoint PUT /BookStore/v1/Books', () => {
         test('successfully update book', async () => {
             const response = await bookStore.updateBook(userId, isbn, newIsbn, token);
 
@@ -195,7 +195,7 @@ describe('Testing bookstore API', () => {
             }
         })
     });
-    describe.only('Testing endpoint GET /BookStore/v1/Books', () => {
+    describe('Testing endpoint GET /BookStore/v1/Books', () => {
         test('successfully get book', async () => {
             const response = await bookStore.getBook(isbn);
 
