@@ -4,6 +4,7 @@ import {account} from "../framework/services/account.js";
 import {bookStore} from "../framework/services/bookStore.js";
 
 const isbn = '9781449331818';
+const newIsbn = '9781449337711';
 let userId;
 let token;
 
@@ -29,7 +30,7 @@ describe('Testing bookstore API', () => {
                 expect(e.response.data.message).toEqual("Passwords must have at least one non alphanumeric character, one digit ('0'-'9'), one uppercase ('A'-'Z'), one lowercase ('a'-'z'), one special character and Password must be eight characters or longer.");
             }
         });
-        test('create user successfully', async () => {
+        test.only('create user successfully', async () => {
             const response = await account.createUser(config.newUser)
             userId = response.data.userID;
 
@@ -48,7 +49,7 @@ describe('Testing bookstore API', () => {
                 expect(e.response.data.message).toEqual('UserName and Password required.');
             }
         });
-        test('generate token successfully', async () => {
+        test.only('generate token successfully', async () => {
             const response = await account.generateToken(config.newUser);
             token = response.data.token;
 
@@ -139,7 +140,7 @@ describe('Testing bookstore API', () => {
             }
         });
     });
-    describe('Testing endpoint /BookStore/v1/Books', () => {
+    describe.only('Testing endpoint POST /BookStore/v1/Books', () => {
         test('successfully create book for user', async () => {
             const response = await bookStore.createBook(userId, token, isbn);
 
@@ -166,24 +167,73 @@ describe('Testing bookstore API', () => {
             }
         });
     });
-    describe('Testing endpoint /BookStore/v1/Books', () => {
+    describe.only('Testing endpoint PUT /BookStore/v1/Books', () => {
         test('successfully update book', async () => {
-            const newIsbn = '9781449337711';
             const response = await bookStore.updateBook(userId, isbn, newIsbn, token);
-            console.log(response.data);
+
+            expect(response.data.userId).toEqual(userId);
+            expect(response.data.books[0].isbn).toEqual(newIsbn);
+        });
+        test('update book without one parameter', async () => {
+            try {
+                const response = await bookStore.updateBook(userId, isbn, '', token)
+            }
+            catch (e) {
+                expect(e.response.status).toEqual(400);
+                expect(e.response.data.code).toEqual('1207');
+                expect(e.response.data.message).toEqual('Request Body is Invalid!');
+            }
+        });
+        test('update book without all parameters', async () => {
+            try {
+                const response = await bookStore.updateBook()
+            }
+            catch (e) {
+                expect(e.response.status).toEqual(400);
+                expect(e.response.data.code).toEqual('1207');
+                expect(e.response.data.message).toEqual('Request Body is Invalid!');
+            }
         })
     });
-    describe('', () => {
-        test.only('', async () => {
+    describe.only('Testing endpoint GET /BookStore/v1/Books', () => {
+        test('successfully get book', async () => {
             const response = await bookStore.getBook(isbn);
-            console.log(response.data);
+
+            expect(response.data.isbn).toEqual(isbn);
+        });
+        test('get book by invalid isbn', async () => {
+            try {
+                const response = await bookStore.getBook('invalid value');
+            }
+            catch (e) {
+                expect(e.response.data.code).toEqual('1205');
+                expect(e.response.data.message).toEqual('ISBN supplied is not available in Books Collection!')
+            }
         })
     });
-    describe('', () => {
-        test('', async () => {
-            const response = await bookStore.deleteBook(userId, isbn, token);
+    describe('Testing endpoint DELETE /BookStore/v1/Books', () => {
+        test('delete book without body', async () => {
+            try {
+                const response = await bookStore.deleteBook('', '', token)
+            }
+            catch (e) {
+                expect(e.response.data.code).toEqual('1207');
+                expect(e.response.data.message).toEqual('User Id not correct!');
+            }
+        });
+        test('delete book without token', async () => {
+            try {
+                const response = await bookStore.deleteBook(userId, newIsbn)
+            }
+            catch (e) {
+                expect(e.response.data.code).toEqual('1200');
+                expect(e.response.data.message).toEqual('User not authorized!');
+            }
+        });
+        test('successfully delete book', async () => {
+            const response = await bookStore.deleteBook(userId, newIsbn, token);
 
             expect(response.status).toEqual(204);
-        })
+        });
     })
 })
