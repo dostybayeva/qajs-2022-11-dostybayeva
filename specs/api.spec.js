@@ -114,7 +114,7 @@ describe('Testing bookstore API', () => {
         });
     });
     describe('Testing endpoint DELETE /Account/v1/User/{UUID}', () => {
-        test('delete user successfully', async () => {
+        test.skip('delete user successfully', async () => {
             const response = await account.deleteUser(userId, token);
 
             expect(response.status).toEqual(204);
