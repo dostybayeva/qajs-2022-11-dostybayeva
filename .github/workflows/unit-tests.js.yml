@@ -48,6 +48,13 @@ jobs:
         if-no-files-found: error
         path: ./coverage
 
+    - name: Deploy
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        folder: jest-html-report
+        clean: true
+        token: ${{ secrets.TOKEN }}
+
     - name: send telegram message on push
       uses: appleboy/telegram-action@master
       with:
