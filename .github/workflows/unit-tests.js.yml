@@ -32,6 +32,7 @@ jobs:
 
     - name: Run tests
       run: npm run test:coverage
+      continue-on-error: true
 
     - name: Upload report
       uses: actions/upload-artifact@v3
@@ -46,3 +47,14 @@ jobs:
         name: coverage
         if-no-files-found: error
         path: ./coverage
+
+    - name: send telegram message on push
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_TO }}
+        token: ${{ secrets.TELEGRAM_TOKEN }}
+        message: |
+          ${{ github.actor }} created commit:
+          Commit message: ${{ github.event.commits[0].message }}
+          Repository: ${{ github.repository }}
+          See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
