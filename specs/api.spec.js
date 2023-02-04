@@ -1,7 +1,10 @@
 import {jest} from "@jest/globals"; jest;
 import {config} from "../framework/config.js";
 import {account} from "../framework/services/account.js";
+import {bookStore} from "../framework/services/bookStore.js";
 
+const isbn = '9781449331818';
+const newIsbn = '9781449337711';
 let userId;
 let token;
 
@@ -137,4 +140,100 @@ describe('Testing bookstore API', () => {
             }
         });
     });
+    describe('Testing endpoint POST /BookStore/v1/Books', () => {
+        test('successfully create book for user', async () => {
+            const response = await bookStore.createBook(userId, token, isbn);
+
+            expect(response.status).toEqual(201);
+        });
+        test('user not auth', async () => {
+            try {
+                const response = await bookStore.createBook(userId, isbn);
+            }
+            catch (e) {
+                expect(e.response.status).toEqual(401);
+                expect(e.response.data.code).toEqual('1200');
+                expect(e.response.data.message).toEqual('User not authorized!');
+            }
+        });
+        test('book already exists for user', async () => {
+            try {
+                const response = await bookStore.createBook(userId, token, isbn);
+            }
+            catch (e) {
+                expect(e.response.status).toEqual(400);
+                expect(e.response.data.code).toEqual('1210');
+                expect(e.response.data.message).toEqual("ISBN already present in the User's Collection!");
+            }
+        });
+    });
+    describe('Testing endpoint PUT /BookStore/v1/Books', () => {
+        test('successfully update book', async () => {
+            const response = await bookStore.updateBook(userId, isbn, newIsbn, token);
+
+            expect(response.data.userId).toEqual(userId);
+            expect(response.data.books[0].isbn).toEqual(newIsbn);
+        });
+        test('update book without one parameter', async () => {
+            try {
+                const response = await bookStore.updateBook(userId, isbn, '', token)
+            }
+            catch (e) {
+                expect(e.response.status).toEqual(400);
+                expect(e.response.data.code).toEqual('1207');
+                expect(e.response.data.message).toEqual('Request Body is Invalid!');
+            }
+        });
+        test('update book without all parameters', async () => {
+            try {
+                const response = await bookStore.updateBook()
+            }
+            catch (e) {
+                expect(e.response.status).toEqual(400);
+                expect(e.response.data.code).toEqual('1207');
+                expect(e.response.data.message).toEqual('Request Body is Invalid!');
+            }
+        })
+    });
+    describe('Testing endpoint GET /BookStore/v1/Books', () => {
+        test('successfully get book', async () => {
+            const response = await bookStore.getBook(isbn);
+
+            expect(response.data.isbn).toEqual(isbn);
+        });
+        test('get book by invalid isbn', async () => {
+            try {
+                const response = await bookStore.getBook('invalid value');
+            }
+            catch (e) {
+                expect(e.response.data.code).toEqual('1205');
+                expect(e.response.data.message).toEqual('ISBN supplied is not available in Books Collection!')
+            }
+        })
+    });
+    describe('Testing endpoint DELETE /BookStore/v1/Books', () => {
+        test('delete book without body', async () => {
+            try {
+                const response = await bookStore.deleteBook('', '', token)
+            }
+            catch (e) {
+                expect(e.response.data.code).toEqual('1207');
+                expect(e.response.data.message).toEqual('User Id not correct!');
+            }
+        });
+        test('delete book without token', async () => {
+            try {
+                const response = await bookStore.deleteBook(userId, newIsbn)
+            }
+            catch (e) {
+                expect(e.response.data.code).toEqual('1200');
+                expect(e.response.data.message).toEqual('User not authorized!');
+            }
+        });
+        test('successfully delete book', async () => {
+            const response = await bookStore.deleteBook(userId, newIsbn, token);
+
+            expect(response.status).toEqual(204);
+        });
+    })
 })
