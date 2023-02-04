@@ -2,3 +2,4 @@ node_modules
 coverage
 .idea
 jest-html-report
+coverage
